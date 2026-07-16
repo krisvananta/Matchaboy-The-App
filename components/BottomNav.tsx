@@ -25,6 +25,26 @@ const tabs = [
     ),
   },
   {
+    href: "/logs",
+    label: "Logs",
+    icon: (active: boolean) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth={active ? 0 : 1.8}
+        className="w-6 h-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard",
     label: "Dashboard",
     icon: (active: boolean) => (

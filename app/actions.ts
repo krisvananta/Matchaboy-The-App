@@ -101,3 +101,30 @@ export async function getDashboardData(date: string): Promise<DashboardData> {
 export async function getMenuItems() {
   return db.select().from(menuItems).orderBy(menuItems.id);
 }
+
+// ─── Sale Log Entry ─────────────────────────────────────────────────────────────────────────
+export interface SaleLogEntry {
+  id:           number;
+  menuItemName: string;
+  quantity:     number;
+  totalPrice:   number;
+  soldAt:       string;
+}
+
+// ─── Get Sale Logs ──────────────────────────────────────────────────────────────────────────
+export async function getSaleLogs(date: string): Promise<SaleLogEntry[]> {
+  const rows = await db
+    .select({
+      id:           sales.id,
+      menuItemName: menuItems.name,
+      quantity:     sales.quantity,
+      totalPrice:   sales.totalPrice,
+      soldAt:       sales.soldAt,
+    })
+    .from(sales)
+    .innerJoin(menuItems, eq(sales.menuItemId, menuItems.id))
+    .where(like(sales.soldAt, `${date}%`))
+    .orderBy(sql`${sales.soldAt} DESC`);
+
+  return rows;
+}
