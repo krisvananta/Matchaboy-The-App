@@ -22,12 +22,14 @@ export interface DashboardItem {
 export interface DashboardData {
   items: DashboardItem[];
   totalRevenue: number;
+  totalCashRevenue: number;
+  totalQrisRevenue: number;
   totalItemsSold: number;
   date: string;
 }
 
 // ─── Log a Sale ────────────────────────────────────────────────────────────────
-export async function logSale(items: SaleItem[]): Promise<{ success: boolean; error?: string }> {
+export async function logSale(items: SaleItem[], paymentMethod: "Cash" | "QRIS"): Promise<{ success: boolean; error?: string }> {
   try {
     if (!items || items.length === 0) {
       return { success: false, error: "No items to log" };
@@ -47,10 +49,11 @@ export async function logSale(items: SaleItem[]): Promise<{ success: boolean; er
       if (!price) continue;
 
       await db.insert(sales).values({
-        menuItemId: item.menuItemId,
-        quantity:   item.quantity,
-        totalPrice: item.quantity * price,
-        soldAt:     now,
+        menuItemId:    item.menuItemId,
+        quantity:      item.quantity,
+        totalPrice:    item.quantity * price,
+        paymentMethod: paymentMethod,
+        soldAt:        now,
       });
     }
 
@@ -95,7 +98,24 @@ export async function getDashboardData(date: string): Promise<DashboardData> {
   const totalRevenue    = items.reduce((sum, i) => sum + i.subtotal, 0);
   const totalItemsSold  = items.reduce((sum, i) => sum + i.quantity, 0);
 
-  return { items, totalRevenue, totalItemsSold, date };
+  // Fetch payment method breakdown
+  const paymentTotals = await db
+    .select({
+      method: sales.paymentMethod,
+      total: sql<number>`COALESCE(SUM(${sales.totalPrice}), 0)`,
+    })
+    .from(sales)
+    .where(like(sales.soldAt, `${datePrefix}%`))
+    .groupBy(sales.paymentMethod);
+
+  let totalCashRevenue = 0;
+  let totalQrisRevenue = 0;
+  for (const row of paymentTotals) {
+    if (row.method === "Cash") totalCashRevenue = Number(row.total);
+    if (row.method === "QRIS") totalQrisRevenue = Number(row.total);
+  }
+
+  return { items, totalRevenue, totalCashRevenue, totalQrisRevenue, totalItemsSold, date };
 }
 
 // ─── Get Menu Items ────────────────────────────────────────────────────────────
@@ -105,22 +125,24 @@ export async function getMenuItems() {
 
 // ─── Sale Log Entry ─────────────────────────────────────────────────────────────────────────
 export interface SaleLogEntry {
-  id:           number;
-  menuItemName: string;
-  quantity:     number;
-  totalPrice:   number;
-  soldAt:       string;
+  id:            number;
+  menuItemName:  string;
+  quantity:      number;
+  totalPrice:    number;
+  paymentMethod: string;
+  soldAt:        string;
 }
 
 // ─── Get Sale Logs ──────────────────────────────────────────────────────────────────────────
 export async function getSaleLogs(date: string): Promise<SaleLogEntry[]> {
   const rows = await db
     .select({
-      id:           sales.id,
-      menuItemName: menuItems.name,
-      quantity:     sales.quantity,
-      totalPrice:   sales.totalPrice,
-      soldAt:       sales.soldAt,
+      id:            sales.id,
+      menuItemName:  menuItems.name,
+      quantity:      sales.quantity,
+      totalPrice:    sales.totalPrice,
+      paymentMethod: sales.paymentMethod,
+      soldAt:        sales.soldAt,
     })
     .from(sales)
     .innerJoin(menuItems, eq(sales.menuItemId, menuItems.id))

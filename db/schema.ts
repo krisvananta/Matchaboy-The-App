@@ -10,11 +10,12 @@ export const menuItems = sqliteTable("menu_items", {
 
 // ─── Sales ─────────────────────────────────────────────────────────────────────
 export const sales = sqliteTable("sales", {
-  id:         integer("id").primaryKey({ autoIncrement: true }),
-  menuItemId: integer("menu_item_id").notNull().references(() => menuItems.id),
-  quantity:   integer("quantity").notNull(),
-  totalPrice: integer("total_price").notNull(),
-  soldAt:     text("sold_at").notNull(), // ISO 8601 string
+  id:            integer("id").primaryKey({ autoIncrement: true }),
+  menuItemId:    integer("menu_item_id").notNull().references(() => menuItems.id),
+  quantity:      integer("quantity").notNull(),
+  totalPrice:    integer("total_price").notNull(),
+  paymentMethod: text("payment_method").$type<"Cash" | "QRIS">().notNull().default("Cash"),
+  soldAt:        text("sold_at").notNull(), // ISO 8601 string
 });
 
 // ─── Relations ─────────────────────────────────────────────────────────────────

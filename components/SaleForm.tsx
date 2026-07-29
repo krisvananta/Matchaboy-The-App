@@ -24,6 +24,8 @@ export default function SaleForm({ menuItems }: SaleFormProps) {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
   const handleIncrement = useCallback((id: number) => {
     setQuantities((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
   }, []);
@@ -43,15 +45,17 @@ export default function SaleForm({ menuItems }: SaleFormProps) {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSubmit = () => {
+  const handlePaymentSelection = (method: "Cash" | "QRIS") => {
     const items = menuItems
       .filter((m) => (quantities[m.id] ?? 0) > 0)
       .map((m) => ({ menuItemId: m.id, quantity: quantities[m.id] }));
 
     if (items.length === 0) return;
 
+    setShowPaymentModal(false);
+
     startTransition(async () => {
-      const result = await logSale(items);
+      const result = await logSale(items, method);
       if (result.success) {
         // Reset quantities
         setQuantities(Object.fromEntries(menuItems.map((m) => [m.id, 0])));
@@ -63,7 +67,7 @@ export default function SaleForm({ menuItems }: SaleFormProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full relative">
       {/* Toast */}
       {toast && (
         <div
@@ -109,7 +113,7 @@ export default function SaleForm({ menuItems }: SaleFormProps) {
         )}
 
         <button
-          onClick={handleSubmit}
+          onClick={() => setShowPaymentModal(true)}
           disabled={totalItems === 0 || isPending}
           className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-200 active:scale-[0.98]
             ${
@@ -120,9 +124,52 @@ export default function SaleForm({ menuItems }: SaleFormProps) {
                 : "bg-matcha-500 text-white shadow-lg shadow-matcha-500/30 hover:bg-matcha-400"
             }`}
         >
-          {isPending ? "Logging…" : totalItems === 0 ? "Select items to log" : "Log Sale"}
+          {isPending ? "Logging…" : totalItems === 0 ? "Select items to log" : "Pilih Pembayaran"}
         </button>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm cursor-pointer"
+          onPointerDown={() => setShowPaymentModal(false)}
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div 
+            className="bg-dark-card border border-dark-border w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 cursor-default"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-white mb-1">Metode Pembayaran</h2>
+              <p className="text-dark-muted text-sm">Pilih jenis pembayaran untuk {totalItems} item ({formatRupiah(totalRevenue)})</p>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handlePaymentSelection("Cash")}
+                className="w-full py-4 rounded-2xl font-bold text-base bg-amber-500/10 text-amber-500 border border-amber-500/20 transition-all active:scale-95 hover:bg-amber-500/20"
+              >
+                💵 Tunai / Cash
+              </button>
+              <button
+                onClick={() => handlePaymentSelection("QRIS")}
+                className="w-full py-4 rounded-2xl font-bold text-base bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 transition-all active:scale-95 hover:bg-emerald-500/20"
+              >
+                📱 QRIS
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setShowPaymentModal(false)}
+              className="w-full mt-4 py-3 rounded-2xl font-bold text-sm text-dark-muted transition-all active:scale-95 hover:bg-dark-surface"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -17,6 +17,7 @@ function groupByTransaction(logs: SaleLogEntry[]) {
   return Array.from(map.entries()).map(([soldAt, items]) => ({
     soldAt,
     items,
+    paymentMethod: items[0]?.paymentMethod || "Cash",
     total: items.reduce((sum, i) => sum + i.totalPrice, 0),
   }));
 }
@@ -49,7 +50,7 @@ export default function LogsList({ logs }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      {transactions.map(({ soldAt, items, total }, txIdx) => (
+      {transactions.map(({ soldAt, items, paymentMethod, total }, txIdx) => (
         <div
           key={soldAt}
           className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden"
@@ -62,9 +63,20 @@ export default function LogsList({ logs }: Props) {
                 Transaksi #{transactions.length - txIdx}
               </span>
             </div>
-            <span className="text-dark-muted text-xs font-mono">
-              {formatTime(soldAt)}
-            </span>
+            <div className="flex items-center gap-2">
+              {paymentMethod === "QRIS" ? (
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  QRIS
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  CASH
+                </span>
+              )}
+              <span className="text-dark-muted text-xs font-mono">
+                {formatTime(soldAt)}
+              </span>
+            </div>
           </div>
 
           {/* Items */}

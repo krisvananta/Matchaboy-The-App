@@ -45,6 +45,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           <p className="text-4xl font-extrabold text-white tracking-tight">
             {formatRupiah(data.totalRevenue)}
           </p>
+          
+          <div className="flex items-center gap-3 mt-4 mb-2">
+            <div className="flex-1 bg-dark-base/40 border border-amber-500/20 rounded-2xl p-3">
+              <p className="text-amber-500 text-[10px] font-bold uppercase tracking-wider mb-1">Tunai</p>
+              <p className="text-white text-sm font-bold">{formatRupiah(data.totalCashRevenue)}</p>
+            </div>
+            <div className="flex-1 bg-dark-base/40 border border-emerald-500/20 rounded-2xl p-3">
+              <p className="text-emerald-500 text-[10px] font-bold uppercase tracking-wider mb-1">QRIS</p>
+              <p className="text-white text-sm font-bold">{formatRupiah(data.totalQrisRevenue)}</p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-3 mt-3">
             <div className="flex items-center gap-1.5 bg-dark-base/40 rounded-full px-3 py-1">
               <span className="text-matcha-400 text-xs font-medium">
