@@ -23,6 +23,31 @@ export function todayLocal(): string {
 }
 
 /**
+ * Get current timestamp as an ISO string preserving local timezone offset.
+ * e.g. "2026-07-17T00:01:23.456+07:00"
+ * This ensures SQLite LIKE 'YYYY-MM-DD%' matches exact local calendar dates.
+ */
+export function nowLocalISO(): string {
+  const now = new Date();
+  const pad = (n: number, digits = 2) => String(n).padStart(digits, "0");
+  const y = now.getFullYear();
+  const m = pad(now.getMonth() + 1);
+  const d = pad(now.getDate());
+  const hh = pad(now.getHours());
+  const mm = pad(now.getMinutes());
+  const ss = pad(now.getSeconds());
+  const ms = pad(now.getMilliseconds(), 3);
+
+  const offsetMinutes = -now.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const absOffset = Math.abs(offsetMinutes);
+  const offsetHours = pad(Math.floor(absOffset / 60));
+  const offsetMins = pad(absOffset % 60);
+
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}.${ms}${sign}${offsetHours}:${offsetMins}`;
+}
+
+/**
  * Format YYYY-MM-DD as a human-readable date.
  * e.g. "2024-01-15" → "Senin, 15 Jan 2024"
  */

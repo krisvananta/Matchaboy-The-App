@@ -1,10 +1,10 @@
 @echo off
-title Matchaboy - Sales Tracker
+title Matchaboy - LocalTunnel Backup
 cd /d "D:\Matchaboy\Matchaboy The App"
 
 echo.
 echo ============================================
-echo   Matchaboy Sales Tracker
+echo   Matchaboy Sales Tracker (LocalTunnel)
 echo ============================================
 echo.
 echo [1/2] Starting Next.js server on port 3001...
@@ -21,12 +21,11 @@ if errorlevel 1 goto WAIT_LOOP
 
 echo Server is ready on http://localhost:3001
 echo.
-echo [2/2] Starting Cloudflare Tunnel...
+echo [2/2] Starting LocalTunnel...
 echo.
 echo ============================================
 echo   Your public URL will appear below.
-echo   Look for the trycloudflare.com URL
-echo   (may take 10-15 seconds to appear)
+echo   Look for the https://*.loca.lt URL
 echo.
 echo   Keep this window open while using the app.
 echo   Close this window to stop everything.
@@ -34,11 +33,9 @@ echo ============================================
 echo.
 
 :TUNNEL_LOOP
-:: Start tunnel in foreground (URL appears here)
-node_modules\cloudflared\bin\cloudflared.exe tunnel --url http://localhost:3001
+npx -y localtunnel --port 3001
 
 echo.
-echo [WARNING] Cloudflare Tunnel disconnected or failed (e.g. Error 1101 / 500 API glitch).
-echo Retrying tunnel in 5 seconds... (Or close this window to stop everything)
+echo [WARNING] LocalTunnel disconnected or exited. Retrying in 5 seconds...
 timeout /t 5 /nobreak > nul
 goto TUNNEL_LOOP

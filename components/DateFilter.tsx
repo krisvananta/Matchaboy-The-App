@@ -1,21 +1,22 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { todayLocal, formatDate } from "@/lib/utils";
 
 export default function DateFilter() {
   const router       = useRouter();
+  const pathname     = usePathname();
   const searchParams = useSearchParams();
   const today        = todayLocal();
   const selected     = searchParams.get("date") ?? today;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
-    router.push(`/dashboard?date=${date}`);
+    router.push(`${pathname}?date=${date}`);
   };
 
   const goToday = () => {
-    router.push(`/dashboard?date=${today}`);
+    router.push(`${pathname}?date=${today}`);
   };
 
   return (

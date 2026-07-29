@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { menuItems, sales } from "@/db/schema";
 import { eq, sql, and, like } from "drizzle-orm";
+import { nowLocalISO } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 export interface SaleItem {
@@ -36,7 +37,7 @@ export async function logSale(items: SaleItem[]): Promise<{ success: boolean; er
     const menuData = await db.select().from(menuItems);
     const menuMap = new Map(menuData.map((m) => [m.id, m.price]));
 
-    const now = new Date().toISOString();
+    const now = nowLocalISO();
 
     // Insert one sale row per item type
     for (const item of items) {

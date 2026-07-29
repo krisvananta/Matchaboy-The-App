@@ -1,10 +1,10 @@
 @echo off
-title Matchaboy - Sales Tracker
+title Matchaboy - Pinggy Tunnel Backup
 cd /d "D:\Matchaboy\Matchaboy The App"
 
 echo.
 echo ============================================
-echo   Matchaboy Sales Tracker
+echo   Matchaboy Sales Tracker (Pinggy Tunnel)
 echo ============================================
 echo.
 echo [1/2] Starting Next.js server on port 3001...
@@ -21,12 +21,11 @@ if errorlevel 1 goto WAIT_LOOP
 
 echo Server is ready on http://localhost:3001
 echo.
-echo [2/2] Starting Cloudflare Tunnel...
+echo [2/2] Starting Pinggy Tunnel...
 echo.
 echo ============================================
 echo   Your public URL will appear below.
-echo   Look for the trycloudflare.com URL
-echo   (may take 10-15 seconds to appear)
+echo   Look for the https://*.pinggy.link URL
 echo.
 echo   Keep this window open while using the app.
 echo   Close this window to stop everything.
@@ -34,11 +33,9 @@ echo ============================================
 echo.
 
 :TUNNEL_LOOP
-:: Start tunnel in foreground (URL appears here)
-node_modules\cloudflared\bin\cloudflared.exe tunnel --url http://localhost:3001
+ssh -p 443 -R0:localhost:3001 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 a.pinggy.io
 
 echo.
-echo [WARNING] Cloudflare Tunnel disconnected or failed (e.g. Error 1101 / 500 API glitch).
-echo Retrying tunnel in 5 seconds... (Or close this window to stop everything)
+echo [WARNING] Pinggy Tunnel disconnected. Retrying in 5 seconds...
 timeout /t 5 /nobreak > nul
 goto TUNNEL_LOOP
